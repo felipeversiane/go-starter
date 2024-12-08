@@ -6,7 +6,7 @@ import (
 
 	"github.com/felipeversiane/go-starter/internal/infra/config"
 	"github.com/felipeversiane/go-starter/internal/infra/config/log"
-	"github.com/felipeversiane/go-starter/internal/infra/services/database"
+	"github.com/felipeversiane/go-starter/internal/infra/database"
 	"github.com/gin-gonic/gin"
 )
 

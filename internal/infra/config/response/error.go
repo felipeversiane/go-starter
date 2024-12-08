@@ -3,10 +3,10 @@ package response
 import "net/http"
 
 type ErrorResponse struct {
-	Message string   `json:"message"`
-	Err     string   `json:"error"`
-	Code    int      `json:"code"`
-	Causes  []Cause  `json:"causes,omitempty"`
+	Message string  `json:"message"`
+	Err     string  `json:"error"`
+	Code    int     `json:"code"`
+	Causes  []Cause `json:"causes,omitempty"`
 }
 
 type Cause struct {
@@ -64,5 +64,13 @@ func NewBadRequestValidationError(message string, causes []Cause) *ErrorResponse
 		Err:     "bad_request",
 		Code:    http.StatusBadRequest,
 		Causes:  causes,
+	}
+}
+
+func NewUnauthorizedRequestError(message string) *ErrorResponse {
+	return &ErrorResponse{
+		Message: message,
+		Err:     "unauthorized",
+		Code:    http.StatusUnauthorized,
 	}
 }

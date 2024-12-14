@@ -10,11 +10,7 @@ func UserRouter(g *gin.RouterGroup, db database.DatabaseInterface) *gin.RouterGr
 
 	user := g.Group("/user")
 	{
-		user.POST("/", controller.InsertOneController)  
-		user.GET("/:id", controller.GetOneController)  
-		user.GET("/", controller.GetAllController)     
-		user.PUT("/:id", controller.UpdateController)  
-		user.DELETE("/:id", controller.DeleteController) 
+		user.POST("/", controller.InsertOneController)
 
 	}
 

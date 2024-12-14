@@ -8,11 +8,15 @@ import (
 func UserRouter(g *gin.RouterGroup, db database.DatabaseInterface) *gin.RouterGroup {
 	controller := NewUserController(NewUserService(NewUserRepository(db)))
 
-	person := g.Group("/user")
+	user := g.Group("/user")
 	{
-		person.POST("/", controller.InsertOneController)
+		user.POST("/", controller.InsertOneController)  
+		user.GET("/:id", controller.GetOneController)  
+		user.GET("/", controller.GetAllController)     
+		user.PUT("/:id", controller.UpdateController)  
+		user.DELETE("/:id", controller.DeleteController) 
 
 	}
 
-	return person
+	return user
 }

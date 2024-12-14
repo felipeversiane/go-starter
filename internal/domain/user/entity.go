@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/felipeversiane/go-starter/internal/domain"
+	"github.com/felipeversiane/go-starter/internal/infra/config/response"
 )
 
 type UserRequest struct {
@@ -22,8 +23,12 @@ type UserResponse struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func ConvertRequestToDomain(req UserRequest) (domain.UserInterface, error) {
-	return domain.NewUser(req.Email, req.FirstName, req.LastName, req.Password)
+func ConvertRequestToDomain(req UserRequest) (domain.UserInterface, *response.ErrorResponse) {
+	domain, err := domain.NewUser(req.Email, req.FirstName, req.LastName, req.Password)
+	if err != nil {
+		return nil, response.NewBadRequestError(err.Error())
+	}
+	return domain, nil
 }
 
 func ConvertDomainToResponse(user domain.UserInterface) *UserResponse {

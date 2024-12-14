@@ -1,6 +1,11 @@
 package user
 
 import (
+	"context"
+	"time"
+
+	"github.com/felipeversiane/go-starter/internal/infra/config/response"
+	"github.com/felipeversiane/go-starter/internal/infra/config/validation"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,7 +26,25 @@ func NewUserController(service UserServiceInterface) UserControllerInterface {
 }
 
 func (controller *userController) InsertOneController(c *gin.Context) {
+	var req UserRequest
 
+	if err := c.ShouldBindJSON(&req); err != nil {
+		validationError := validation.ValidateError(err)
+		c.JSON(validationError.Code, validationError)
+		return
+	}
+
+	ctxTimeout, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	id, err := controller.service.InsertOneService(req, ctxTimeout)
+	if err != nil {
+		c.JSON(err.Code, err)
+		return
+	}
+
+	response := response.NewCreatedResponse("User created successfully", gin.H{"id": id})
+	c.JSON(response.Code, response)
 }
 
 func (controller *userController) GetOneController(c *gin.Context) {

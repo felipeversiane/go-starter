@@ -17,9 +17,8 @@ type user struct {
 	password  string
 	createdAt time.Time
 	updatedAt time.Time
+	deleted   bool
 }
-
-
 
 type UserInterface interface {
 	GetID() string
@@ -33,6 +32,8 @@ type UserInterface interface {
 	GetCreatedAt() time.Time
 	GetUpdatedAt() time.Time
 	SetUpdatedAt(updatedAt time.Time)
+	GetDeleted() bool
+	SetDeleted(deleted bool)
 	GenerateToken() (string, string, *response.ErrorResponse)
 	GenerateAcessToken() (string, *response.ErrorResponse)
 	GenerateRefreshToken() (string, *response.ErrorResponse)
@@ -54,7 +55,16 @@ func NewUser(email, firstName, lastName, password string) (UserInterface, error)
 		password:  hashedPassword,
 		createdAt: time.Now(),
 		updatedAt: time.Now(),
+		deleted:   false,
 	}, nil
+}
+
+func (u *user) GetDeleted() bool {
+	return u.deleted
+}
+
+func (u *user) SetDeleted(deleted bool) {
+	u.deleted = deleted
 }
 
 func (u *user) GetID() string {

@@ -12,7 +12,6 @@ func UserRouter(g *gin.RouterGroup, db database.DatabaseInterface) *gin.RouterGr
 	{
 		user.POST("/", controller.InsertOneController)
 		user.GET("/:id", controller.GetOneByIDController)
-		user.GET("/:email", controller.GetOneByEmailController)
 		user.GET("/", controller.GetAllController)
 		user.DELETE("/:id", controller.DeleteController)
 		user.PUT("/:id", controller.UpdateController)

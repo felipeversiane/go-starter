@@ -12,11 +12,11 @@ type userService struct {
 
 type UserServiceInterface interface {
 	InsertOneService(req UserRequest, ctx context.Context) (string, *response.ErrorResponse)
-	GetOneByIDService(string, ctx context.Context) (*UserResponse, *response.ErrorResponse)
-	GetOneByEmailService(string, ctx context.Context) (*UserResponse, *response.ErrorResponse)
+	GetOneByIDService(id string, ctx context.Context) (*UserResponse, *response.ErrorResponse)
+	GetOneByEmailService(id string, ctx context.Context) (*UserResponse, *response.ErrorResponse)
 	GetAllService(ctx context.Context) (*[]UserResponse, *response.ErrorResponse)
-	UpdateService(string, req UserRequest, ctx context.Context) *response.ErrorResponse
-	DeleteService(string, ctx context.Context) *response.ErrorResponse
+	UpdateService(id string, req UserRequest, ctx context.Context) *response.ErrorResponse
+	DeleteService(id string, ctx context.Context) *response.ErrorResponse
 }
 
 func NewUserService(repository UserRepositoryInterface) UserServiceInterface {
@@ -35,11 +35,15 @@ func (service *userService) InsertOneService(req UserRequest, ctx context.Contex
 	return id, nil
 }
 
-func (service *userService) GetOneByIDService(string, ctx context.Context) (*UserResponse, *response.ErrorResponse) {
-	return nil, nil
+func (service *userService) GetOneByIDService(id string, ctx context.Context) (*UserResponse, *response.ErrorResponse) {
+	user, err := service.repository.GetOneByIDRepository(id, ctx)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
-func (service *userService) GetOneByEmailService(string, ctx context.Context) (*UserResponse, *response.ErrorResponse) {
+func (service *userService) GetOneByEmailService(id string, ctx context.Context) (*UserResponse, *response.ErrorResponse) {
 	return nil, nil
 }
 
@@ -47,10 +51,10 @@ func (service *userService) GetAllService(ctx context.Context) (*[]UserResponse,
 	return nil, nil
 }
 
-func (service *userService) UpdateService(string, req UserRequest, ctx context.Context) *response.ErrorResponse {
+func (service *userService) UpdateService(id string, req UserRequest, ctx context.Context) *response.ErrorResponse {
 	return nil
 }
 
-func (service *userService) DeleteService(string, ctx context.Context) *response.ErrorResponse {
+func (service *userService) DeleteService(id string, ctx context.Context) *response.ErrorResponse {
 	return nil
 }

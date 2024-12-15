@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"net/http"
 	"time"
 
 	"github.com/felipeversiane/go-starter/internal/infra/config/response"
@@ -35,10 +36,10 @@ func (controller *userController) InsertOneController(c *gin.Context) {
 		return
 	}
 
-	ctxTimeout, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
-	id, err := controller.service.InsertOneService(req, ctxTimeout)
+	id, err := controller.service.InsertOneService(req, ctx)
 	if err != nil {
 		c.JSON(err.Code, err)
 		return
@@ -50,6 +51,24 @@ func (controller *userController) InsertOneController(c *gin.Context) {
 
 func (controller *userController) GetOneByIDController(c *gin.Context) {
 
+	id := c.Param("id")
+	if id == "" {
+		validationError := response.NewBadRequestError("ID is required")
+		c.JSON(validationError.Code, validationError)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	user, err := controller.service.GetOneByIDService(id, ctx)
+	if err != nil {
+		c.JSON(err.Code, err)
+		return
+	}
+
+	response := response.NewSuccessResponse("User retrieved successfully", http.StatusOK, user)
+	c.JSON(response.Code, response)
 }
 
 func (controller *userController) GetOneByEmailController(c *gin.Context) {

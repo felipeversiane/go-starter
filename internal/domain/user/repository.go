@@ -7,6 +7,7 @@ import (
 	"github.com/felipeversiane/go-starter/internal/domain"
 	"github.com/felipeversiane/go-starter/internal/infra/config/response"
 	"github.com/felipeversiane/go-starter/internal/infra/database"
+	"github.com/jackc/pgx/v5"
 )
 
 type userRepository struct {
@@ -15,11 +16,11 @@ type userRepository struct {
 
 type UserRepositoryInterface interface {
 	InsertOneRepository(domain domain.UserInterface, ctx context.Context) (string, *response.ErrorResponse)
-	GetOneByIDRepository(string, ctx context.Context) (*UserResponse, *response.ErrorResponse)
-	GetOneByEmailRepository(string, ctx context.Context) (*UserResponse, *response.ErrorResponse)
+	GetOneByIDRepository(id string, ctx context.Context) (*UserResponse, *response.ErrorResponse)
+	GetOneByEmailRepository(id string, ctx context.Context) (*UserResponse, *response.ErrorResponse)
 	GetOneAllRepository(ctx context.Context) ([]UserResponse, *response.ErrorResponse)
-	UpdateRepository(string, domain domain.UserInterface, ctx context.Context) *response.ErrorResponse
-	DeleteRepository(string, ctx context.Context) *response.ErrorResponse
+	UpdateRepository(id string, domain domain.UserInterface, ctx context.Context) *response.ErrorResponse
+	DeleteRepository(id string, ctx context.Context) *response.ErrorResponse
 }
 
 func NewUserRepository(db database.DatabaseInterface) UserRepositoryInterface {
@@ -49,11 +50,33 @@ func (repository *userRepository) InsertOneRepository(domain domain.UserInterfac
 	return id, nil
 }
 
-func (repository *userRepository) GetOneByIDRepository(string, ctx context.Context) (*UserResponse, *response.ErrorResponse) {
-	return nil, nil
+func (repository *userRepository) GetOneByIDRepository(id string, ctx context.Context) (*UserResponse, *response.ErrorResponse) {
+	query := `
+		SELECT id, email, first_name, last_name, created_at, updated_at
+		FROM users
+		WHERE id = $1 AND deleted = false`
+
+	var user UserResponse
+	err := repository.db.GetDB().QueryRow(ctx, query, id).Scan(
+		&user.ID,
+		&user.Email,
+		&user.FirstName,
+		&user.LastName,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, response.NewNotFoundError("User not found")
+		}
+		return nil, response.NewInternalServerError(fmt.Sprintf("Error querying user by ID: %v", err))
+	}
+
+	return &user, nil
+
 }
 
-func (repository *userRepository) GetOneByEmailRepository(string, ctx context.Context) (*UserResponse, *response.ErrorResponse) {
+func (repository *userRepository) GetOneByEmailRepository(id string, ctx context.Context) (*UserResponse, *response.ErrorResponse) {
 	return nil, nil
 }
 
@@ -61,10 +84,10 @@ func (repository *userRepository) GetOneAllRepository(ctx context.Context) ([]Us
 	return nil, nil
 }
 
-func (repository *userRepository) UpdateRepository(string, domain domain.UserInterface, ctx context.Context) *response.ErrorResponse {
+func (repository *userRepository) UpdateRepository(id string, domain domain.UserInterface, ctx context.Context) *response.ErrorResponse {
 	return nil
 }
 
-func (repository *userRepository) DeleteRepository(string, ctx context.Context) *response.ErrorResponse {
+func (repository *userRepository) DeleteRepository(id string, ctx context.Context) *response.ErrorResponse {
 	return nil
 }

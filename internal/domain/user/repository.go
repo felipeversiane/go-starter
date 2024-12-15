@@ -15,6 +15,11 @@ type userRepository struct {
 
 type UserRepositoryInterface interface {
 	InsertOneRepository(domain domain.UserInterface, ctx context.Context) (string, *response.ErrorResponse)
+	GetOneByIDRepository(string, ctx context.Context) (*UserResponse, *response.ErrorResponse)
+	GetOneByEmailRepository(string, ctx context.Context) (*UserResponse, *response.ErrorResponse)
+	GetOneAllRepository(ctx context.Context) ([]UserResponse, *response.ErrorResponse)
+	UpdateRepository(string, domain domain.UserInterface, ctx context.Context) *response.ErrorResponse
+	DeleteRepository(string, ctx context.Context) *response.ErrorResponse
 }
 
 func NewUserRepository(db database.DatabaseInterface) UserRepositoryInterface {
@@ -42,4 +47,24 @@ func (repository *userRepository) InsertOneRepository(domain domain.UserInterfac
 		return "", response.NewInternalServerError(fmt.Sprintf("Unable to insert user: %v", err))
 	}
 	return id, nil
+}
+
+func (repository *userRepository) GetOneByIDRepository(string, ctx context.Context) (*UserResponse, *response.ErrorResponse) {
+	return nil, nil
+}
+
+func (repository *userRepository) GetOneByEmailRepository(string, ctx context.Context) (*UserResponse, *response.ErrorResponse) {
+	return nil, nil
+}
+
+func (repository *userRepository) GetOneAllRepository(ctx context.Context) ([]UserResponse, *response.ErrorResponse) {
+	return nil, nil
+}
+
+func (repository *userRepository) UpdateRepository(string, domain domain.UserInterface, ctx context.Context) *response.ErrorResponse {
+	return nil
+}
+
+func (repository *userRepository) DeleteRepository(string, ctx context.Context) *response.ErrorResponse {
+	return nil
 }

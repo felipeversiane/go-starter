@@ -15,7 +15,8 @@ type userController struct {
 
 type UserControllerInterface interface {
 	InsertOneController(c *gin.Context)
-	GetOneController(c *gin.Context)
+	GetOneByIDController(c *gin.Context)
+	GetOneByEmailController(c *gin.Context)
 	GetAllController(c *gin.Context)
 	UpdateController(c *gin.Context)
 	DeleteController(c *gin.Context)
@@ -47,9 +48,14 @@ func (controller *userController) InsertOneController(c *gin.Context) {
 	c.JSON(response.Code, response)
 }
 
-func (controller *userController) GetOneController(c *gin.Context) {
+func (controller *userController) GetOneByIDController(c *gin.Context) {
 
 }
+
+func (controller *userController) GetOneByEmailController(c *gin.Context) {
+
+}
+
 func (controller *userController) GetAllController(c *gin.Context) {
 
 }

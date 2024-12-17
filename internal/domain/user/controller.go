@@ -123,6 +123,39 @@ func (controller *userController) GetAllController(c *gin.Context) {
 
 func (controller *userController) UpdateController(c *gin.Context) {
 
+	var req UserUpdateRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		validationError := validation.ValidateError(err)
+		c.JSON(validationError.Code, validationError)
+		return
+	}
+
+	id := c.Param("id")
+	if id == "" {
+		validationError := response.NewBadRequestError("ID is required")
+		c.JSON(validationError.Code, validationError)
+		return
+	}
+
+	_, parseErr := uuid.Parse(id)
+	if parseErr != nil {
+		validationError := response.NewBadRequestError("Invalid ID format")
+		c.JSON(validationError.Code, validationError)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	err := controller.service.UpdateService(id, req, ctx)
+	if err != nil {
+		c.JSON(err.Code, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
+
 }
 
 func (controller *userController) DeleteController(c *gin.Context) {

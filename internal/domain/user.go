@@ -59,6 +59,16 @@ func NewUser(email, firstName, lastName, password string) (UserInterface, error)
 	}, nil
 }
 
+func NewUpdateUser(firstName, lastName string) UserInterface {
+	user := &user{
+		firstName: firstName,
+		lastName:  lastName,
+		updatedAt: time.Now(),
+	}
+
+	return user
+}
+
 func (u *user) GetDeleted() bool {
 	return u.deleted
 }

@@ -14,6 +14,11 @@ type UserRequest struct {
 	Password  string `json:"password" binding:"required,min=8"`
 }
 
+type UserUpdateRequest struct {
+	FirstName string `json:"first_name" binding:"required,min=2,max=50"`
+	LastName  string `json:"last_name" binding:"required,min=2,max=50"`
+}
+
 type UserResponse struct {
 	ID        string    `json:"id"`
 	Email     string    `json:"email"`
@@ -29,6 +34,11 @@ func ConvertRequestToDomain(req UserRequest) (domain.UserInterface, *response.Er
 		return nil, response.NewBadRequestError(err.Error())
 	}
 	return domain, nil
+}
+
+func ConvertUpdateRequestToDomain(req UserUpdateRequest) domain.UserInterface {
+	domain := domain.NewUpdateUser(req.FirstName, req.LastName)
+	return domain
 }
 
 func ConvertDomainToResponse(user domain.UserInterface) *UserResponse {

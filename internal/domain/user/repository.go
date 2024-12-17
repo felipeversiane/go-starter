@@ -95,7 +95,7 @@ func (repository *userRepository) GetOneByEmailRepository(email string, ctx cont
 		if err == pgx.ErrNoRows {
 			return nil, response.NewNotFoundError("User not found")
 		}
-		return nil, response.NewInternalServerError(fmt.Sprintln("Error querying user by email: %v", err))
+		return nil, response.NewInternalServerError(fmt.Sprintf("Error querying user by email: %v", err))
 	}
 
 	return &user, nil
@@ -109,7 +109,7 @@ func (repository *userRepository) GetAllRepository(ctx context.Context) ([]UserR
 
 	rows, err := repository.db.GetDB().Query(ctx, query)
 	if err != nil {
-		return nil, response.NewInternalServerError(fmt.Sprintln("Unable to query users: %w", err))
+		return nil, response.NewInternalServerError(fmt.Sprintf("Unable to query users: %v", err))
 	}
 	defer rows.Close()
 
@@ -118,7 +118,7 @@ func (repository *userRepository) GetAllRepository(ctx context.Context) ([]UserR
 		user := UserResponse{}
 		err := rows.Scan(&user.ID, &user.Email, &user.FirstName, &user.LastName, &user.CreatedAt, &user.UpdatedAt)
 		if err != nil {
-			return nil, response.NewInternalServerError(fmt.Sprintln("Unable to scan row: %w", err))
+			return nil, response.NewInternalServerError(fmt.Sprintf("Unable to scan row: %v", err))
 		}
 		users = append(users, user)
 	}
@@ -127,6 +127,24 @@ func (repository *userRepository) GetAllRepository(ctx context.Context) ([]UserR
 }
 
 func (repository *userRepository) UpdateRepository(id string, domain domain.UserInterface, ctx context.Context) *response.ErrorResponse {
+	query := `
+		UPDATE users 
+		SET first_name = $1, last_name = $2, updated_at = $3 
+		WHERE id = $4 AND deleted = false
+	`
+
+	args := []interface{}{
+		domain.GetFirstName(),
+		domain.GetLastName(),
+		domain.GetUpdatedAt(),
+		id,
+	}
+
+	_, err := repository.db.GetDB().Exec(ctx, query, args...)
+	if err != nil {
+		return response.NewInternalServerError(fmt.Sprintf("Error updating user: %v", err))
+	}
+
 	return nil
 }
 

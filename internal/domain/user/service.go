@@ -15,7 +15,7 @@ type UserServiceInterface interface {
 	GetOneByIDService(id string, ctx context.Context) (*UserResponse, *response.ErrorResponse)
 	GetOneByEmailService(email string, ctx context.Context) (*UserResponse, *response.ErrorResponse)
 	GetAllService(ctx context.Context) (*[]UserResponse, *response.ErrorResponse)
-	UpdateService(id string, req UserRequest, ctx context.Context) *response.ErrorResponse
+	UpdateService(id string, req UserUpdateRequest, ctx context.Context) *response.ErrorResponse
 	DeleteService(id string, ctx context.Context) *response.ErrorResponse
 }
 
@@ -63,7 +63,16 @@ func (service *userService) GetAllService(ctx context.Context) (*[]UserResponse,
 	return &users, nil
 }
 
-func (service *userService) UpdateService(id string, req UserRequest, ctx context.Context) *response.ErrorResponse {
+func (service *userService) UpdateService(id string, req UserUpdateRequest, ctx context.Context) *response.ErrorResponse {
+	domain := ConvertUpdateRequestToDomain(req)
+	user, err := service.GetOneByIDService(id, ctx)
+	if err != nil && user == nil {
+		return response.NewBadRequestError("User do not exists")
+	}
+	err = service.repository.UpdateRepository(id, domain, ctx)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

@@ -3,11 +3,13 @@ package user
 import (
 	"context"
 	"net/http"
+	"net/mail"
 	"time"
 
 	"github.com/felipeversiane/go-starter/internal/infra/config/response"
 	"github.com/felipeversiane/go-starter/internal/infra/config/validation"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type userController struct {
@@ -45,7 +47,7 @@ func (controller *userController) InsertOneController(c *gin.Context) {
 		return
 	}
 
-	response := response.NewCreatedResponse("User created successfully", gin.H{"id": id})
+	response := response.NewSuccessResponse(http.StatusCreated, gin.H{"id": id})
 	c.JSON(response.Code, response)
 }
 
@@ -54,6 +56,13 @@ func (controller *userController) GetOneByIDController(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
 		validationError := response.NewBadRequestError("ID is required")
+		c.JSON(validationError.Code, validationError)
+		return
+	}
+
+	_, parseErr := uuid.Parse(id)
+	if parseErr != nil {
+		validationError := response.NewBadRequestError("Invalid ID format")
 		c.JSON(validationError.Code, validationError)
 		return
 	}
@@ -67,16 +76,49 @@ func (controller *userController) GetOneByIDController(c *gin.Context) {
 		return
 	}
 
-	response := response.NewSuccessResponse("User retrieved successfully", http.StatusOK, user)
+	response := response.NewSuccessResponse(http.StatusOK, user)
 	c.JSON(response.Code, response)
 }
 
 func (controller *userController) GetOneByEmailController(c *gin.Context) {
+	email := c.Param("email")
+	if email == "" {
+		validationError := response.NewBadRequestError("Email is required")
+		c.JSON(validationError.Code, validationError)
+		return
+	}
 
+	if _, err := mail.ParseAddress(email); err != nil {
+		validationError := response.NewBadRequestError("Invalid email format")
+		c.JSON(validationError.Code, validationError)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	user, err := controller.service.GetOneByEmailService(email, ctx)
+	if err != nil {
+		c.JSON(err.Code, err)
+		return
+	}
+
+	response := response.NewSuccessResponse(http.StatusOK, user)
+	c.JSON(response.Code, response)
 }
 
 func (controller *userController) GetAllController(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
 
+	users, err := controller.service.GetAllService(ctx)
+	if err != nil {
+		c.JSON(err.Code, err)
+		return
+	}
+
+	response := response.NewSuccessResponse(http.StatusOK, users)
+	c.JSON(response.Code, response)
 }
 
 func (controller *userController) UpdateController(c *gin.Context) {

@@ -28,6 +28,10 @@ func (service *userService) InsertOneService(req UserRequest, ctx context.Contex
 	if err != nil {
 		return "", err
 	}
+	user, err := service.GetOneByEmailService(domain.GetEmail(), ctx)
+	if err == nil && user != nil {
+		return "", response.NewBadRequestError("User with this email already exists")
+	}
 	id, err := service.repository.InsertOneRepository(domain, ctx)
 	if err != nil {
 		return "", err

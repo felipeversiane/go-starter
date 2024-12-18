@@ -10,20 +10,39 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
+var (
+	JWT_SECRET_KEY         = "JWT_SECRET_KEY"
+	JWT_REFRESH_SECRET_KEY = "JWT_SECRET_REFRESH_KEY"
+)
+
+func NewUserLogin(
+	email, password string,
+) (UserInterface, error) {
+	hashedPassword, err := hashPassword(password)
+	if err != nil {
+		return nil, fmt.Errorf("failed to hash password: %w", err)
+	}
+
+	return &user{
+		email:    email,
+		password: hashedPassword,
+	}, nil
+}
+
 func (ud *user) GenerateToken() (string, string, *response.ErrorResponse) {
-	acessToken, err := ud.GenerateAcessToken()
+	access, err := ud.GenerateAcessToken()
 	if err != nil {
 		return "", "", err
 	}
-	refreshToken, err := ud.GenerateRefreshToken()
+	refresh, err := ud.GenerateRefreshToken()
 	if err != nil {
 		return "", "", err
 	}
-	return acessToken, refreshToken, nil
+	return access, refresh, nil
 }
 
 func (ud *user) GenerateAcessToken() (string, *response.ErrorResponse) {
-	secret := os.Getenv("JWT_SECRET_KEY")
+	secret := os.Getenv(JWT_SECRET_KEY)
 
 	claims := jwt.MapClaims{
 		"id":         ud.id,
@@ -45,7 +64,7 @@ func (ud *user) GenerateAcessToken() (string, *response.ErrorResponse) {
 }
 
 func (ud *user) GenerateRefreshToken() (string, *response.ErrorResponse) {
-	secret := os.Getenv("JWT_REFRESH_SECRET_KEY")
+	secret := os.Getenv(JWT_REFRESH_SECRET_KEY)
 
 	refreshTokenClaims := jwt.MapClaims{
 		"id":  ud.id,
@@ -64,7 +83,7 @@ func (ud *user) GenerateRefreshToken() (string, *response.ErrorResponse) {
 }
 
 func VerifyAcessToken(tokenValue string) (UserInterface, *response.ErrorResponse) {
-	secret := os.Getenv("JWT_SECRET_KEY")
+	secret := os.Getenv(JWT_SECRET_KEY)
 
 	token, err := jwt.Parse(RemoveBearerPrefix(tokenValue), func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); ok {
@@ -91,7 +110,7 @@ func VerifyAcessToken(tokenValue string) (UserInterface, *response.ErrorResponse
 }
 
 func VerifyRefreshToken(tokenValue string) (UserInterface, *response.ErrorResponse) {
-	secret := os.Getenv("JWT_REFRESH_SECRET_KEY")
+	secret := os.Getenv(JWT_REFRESH_SECRET_KEY)
 
 	token, err := jwt.Parse(RemoveBearerPrefix(tokenValue), func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); ok {

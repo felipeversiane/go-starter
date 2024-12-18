@@ -3,13 +3,11 @@ package user
 import (
 	"context"
 	"net/http"
-	"net/mail"
 	"time"
 
 	"github.com/felipeversiane/go-starter/internal/infra/config/response"
 	"github.com/felipeversiane/go-starter/internal/infra/config/validation"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type userController struct {
@@ -60,13 +58,6 @@ func (controller *userController) GetOneByIDController(c *gin.Context) {
 		return
 	}
 
-	_, parseErr := uuid.Parse(id)
-	if parseErr != nil {
-		validationError := response.NewBadRequestError("Invalid ID format")
-		c.JSON(validationError.Code, validationError)
-		return
-	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
@@ -84,12 +75,6 @@ func (controller *userController) GetOneByEmailController(c *gin.Context) {
 	email := c.Param("email")
 	if email == "" {
 		validationError := response.NewBadRequestError("Email is required")
-		c.JSON(validationError.Code, validationError)
-		return
-	}
-
-	if _, err := mail.ParseAddress(email); err != nil {
-		validationError := response.NewBadRequestError("Invalid email format")
 		c.JSON(validationError.Code, validationError)
 		return
 	}
@@ -138,13 +123,6 @@ func (controller *userController) UpdateController(c *gin.Context) {
 		return
 	}
 
-	_, parseErr := uuid.Parse(id)
-	if parseErr != nil {
-		validationError := response.NewBadRequestError("Invalid ID format")
-		c.JSON(validationError.Code, validationError)
-		return
-	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
@@ -159,5 +137,21 @@ func (controller *userController) UpdateController(c *gin.Context) {
 }
 
 func (controller *userController) DeleteController(c *gin.Context) {
+	id := c.Param("id")
+	if id == "" {
+		validationError := response.NewBadRequestError("ID is required")
+		c.JSON(validationError.Code, validationError)
+		return
+	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	err := controller.service.DeleteService(id, ctx)
+	if err != nil {
+		c.JSON(err.Code, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{})
 }

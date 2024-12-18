@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/felipeversiane/go-starter/internal/domain"
 	"github.com/felipeversiane/go-starter/internal/infra/config/response"
@@ -149,5 +150,26 @@ func (repository *userRepository) UpdateRepository(id string, domain domain.User
 }
 
 func (repository *userRepository) DeleteRepository(id string, ctx context.Context) *response.ErrorResponse {
+	query := `
+		UPDATE users 
+		SET deleted = true, updated_at = $1 
+		WHERE id = $2 AND deleted = false
+	`
+
+	args := []interface{}{
+		time.Now().UTC(), 
+		id,
+	}
+
+	result, err := repository.db.GetDB().Exec(ctx, query, args...)
+	if err != nil {
+		return response.NewInternalServerError(fmt.Sprintf("Error deleting user: %v", err))
+	}
+
+	rowsAffected := result.RowsAffected()
+	if rowsAffected == 0 {
+		return response.NewNotFoundError("User not found or already deleted")
+	}
+
 	return nil
 }

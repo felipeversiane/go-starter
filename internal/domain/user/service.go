@@ -2,8 +2,10 @@ package user
 
 import (
 	"context"
+	"net/mail"
 
 	"github.com/felipeversiane/go-starter/internal/infra/config/response"
+	"github.com/google/uuid"
 )
 
 type userService struct {
@@ -40,6 +42,11 @@ func (service *userService) InsertOneService(req UserRequest, ctx context.Contex
 }
 
 func (service *userService) GetOneByIDService(id string, ctx context.Context) (*UserResponse, *response.ErrorResponse) {
+	_, parseErr := uuid.Parse(id)
+	if parseErr != nil {
+		err := response.NewBadRequestError("Invalid ID format")
+		return nil, err
+	}
 	user, err := service.repository.GetOneByIDRepository(id, ctx)
 	if err != nil {
 		return nil, err
@@ -48,6 +55,10 @@ func (service *userService) GetOneByIDService(id string, ctx context.Context) (*
 }
 
 func (service *userService) GetOneByEmailService(email string, ctx context.Context) (*UserResponse, *response.ErrorResponse) {
+	if _, err := mail.ParseAddress(email); err != nil {
+		validationErr := response.NewBadRequestError("Invalid email format")
+		return nil, validationErr
+	}
 	user, err := service.repository.GetOneByEmailRepository(email, ctx)
 	if err != nil {
 		return nil, err
@@ -64,6 +75,11 @@ func (service *userService) GetAllService(ctx context.Context) (*[]UserResponse,
 }
 
 func (service *userService) UpdateService(id string, req UserUpdateRequest, ctx context.Context) *response.ErrorResponse {
+	_, parseErr := uuid.Parse(id)
+	if parseErr != nil {
+		validationError := response.NewBadRequestError("Invalid ID format")
+		return validationError
+	}
 	domain := ConvertUpdateRequestToDomain(req)
 	user, err := service.GetOneByIDService(id, ctx)
 	if err != nil && user == nil {
@@ -77,5 +93,14 @@ func (service *userService) UpdateService(id string, req UserUpdateRequest, ctx 
 }
 
 func (service *userService) DeleteService(id string, ctx context.Context) *response.ErrorResponse {
+	_, parseErr := uuid.Parse(id)
+	if parseErr != nil {
+		validationError := response.NewBadRequestError("Invalid ID format")
+		return validationError
+	}
+	err := service.repository.DeleteRepository(id, ctx)
+	if err != nil {
+		return err
+	}
 	return nil
 }

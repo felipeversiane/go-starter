@@ -8,6 +8,8 @@ import (
 	"github.com/google/uuid"
 )
 
+var validationErr *response.ErrorResponse
+
 type userService struct {
 	repository UserRepositoryInterface
 }
@@ -44,8 +46,8 @@ func (service *userService) InsertOneService(req UserRequest, ctx context.Contex
 func (service *userService) GetOneByIDService(id string, ctx context.Context) (*UserResponse, *response.ErrorResponse) {
 	_, parseErr := uuid.Parse(id)
 	if parseErr != nil {
-		err := response.NewBadRequestError("Invalid ID format")
-		return nil, err
+		validationErr = response.NewBadRequestError("Invalid ID format")
+		return nil, validationErr
 	}
 	user, err := service.repository.GetOneByIDRepository(id, ctx)
 	if err != nil {
@@ -55,8 +57,13 @@ func (service *userService) GetOneByIDService(id string, ctx context.Context) (*
 }
 
 func (service *userService) GetOneByEmailService(email string, ctx context.Context) (*UserResponse, *response.ErrorResponse) {
+
+	if email == "" {
+		validationErr = response.NewBadRequestError("Email is required")
+		return nil, validationErr
+	}
 	if _, err := mail.ParseAddress(email); err != nil {
-		validationErr := response.NewBadRequestError("Invalid email format")
+		validationErr = response.NewBadRequestError("Invalid email format")
 		return nil, validationErr
 	}
 	user, err := service.repository.GetOneByEmailRepository(email, ctx)
@@ -75,10 +82,14 @@ func (service *userService) GetAllService(ctx context.Context) (*[]UserResponse,
 }
 
 func (service *userService) UpdateService(id string, req UserUpdateRequest, ctx context.Context) *response.ErrorResponse {
+	if id == "" {
+		validationErr = response.NewBadRequestError("ID is required")
+		return validationErr
+	}
 	_, parseErr := uuid.Parse(id)
 	if parseErr != nil {
-		validationError := response.NewBadRequestError("Invalid ID format")
-		return validationError
+		validationErr = response.NewBadRequestError("Invalid ID format")
+		return validationErr
 	}
 	domain := ConvertUpdateRequestToDomain(req)
 	user, err := service.GetOneByIDService(id, ctx)
@@ -93,10 +104,14 @@ func (service *userService) UpdateService(id string, req UserUpdateRequest, ctx 
 }
 
 func (service *userService) DeleteService(id string, ctx context.Context) *response.ErrorResponse {
+	if id == "" {
+		validationErr = response.NewBadRequestError("ID is required")
+		return validationErr
+	}
 	_, parseErr := uuid.Parse(id)
 	if parseErr != nil {
-		validationError := response.NewBadRequestError("Invalid ID format")
-		return validationError
+		validationErr = response.NewBadRequestError("Invalid ID format")
+		return validationErr
 	}
 	err := service.repository.DeleteRepository(id, ctx)
 	if err != nil {

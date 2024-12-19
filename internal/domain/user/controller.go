@@ -31,8 +31,8 @@ func (controller *userController) InsertOneController(c *gin.Context) {
 	var req UserRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		validationError := validation.ValidateError(err)
-		c.JSON(validationError.Code, validationError)
+		validationErr := validation.ValidateError(err)
+		c.JSON(validationErr.Code, validationErr)
 		return
 	}
 
@@ -52,11 +52,6 @@ func (controller *userController) InsertOneController(c *gin.Context) {
 func (controller *userController) GetOneByIDController(c *gin.Context) {
 
 	id := c.Param("id")
-	if id == "" {
-		validationError := response.NewBadRequestError("ID is required")
-		c.JSON(validationError.Code, validationError)
-		return
-	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
@@ -73,11 +68,6 @@ func (controller *userController) GetOneByIDController(c *gin.Context) {
 
 func (controller *userController) GetOneByEmailController(c *gin.Context) {
 	email := c.Param("email")
-	if email == "" {
-		validationError := response.NewBadRequestError("Email is required")
-		c.JSON(validationError.Code, validationError)
-		return
-	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
@@ -111,17 +101,12 @@ func (controller *userController) UpdateController(c *gin.Context) {
 	var req UserUpdateRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		validationError := validation.ValidateError(err)
-		c.JSON(validationError.Code, validationError)
+		validationErr := validation.ValidateError(err)
+		c.JSON(validationErr.Code, validationErr)
 		return
 	}
 
 	id := c.Param("id")
-	if id == "" {
-		validationError := response.NewBadRequestError("ID is required")
-		c.JSON(validationError.Code, validationError)
-		return
-	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
@@ -138,11 +123,6 @@ func (controller *userController) UpdateController(c *gin.Context) {
 
 func (controller *userController) DeleteController(c *gin.Context) {
 	id := c.Param("id")
-	if id == "" {
-		validationError := response.NewBadRequestError("ID is required")
-		c.JSON(validationError.Code, validationError)
-		return
-	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()

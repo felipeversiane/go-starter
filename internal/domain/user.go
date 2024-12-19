@@ -69,6 +69,20 @@ func NewUpdateUser(firstName, lastName string) UserInterface {
 	return user
 }
 
+func NewUserLogin(
+	email, password string,
+) (UserInterface, error) {
+	hashedPassword, err := hashPassword(password)
+	if err != nil {
+		return nil, fmt.Errorf("failed to hash password: %w", err)
+	}
+
+	return &user{
+		email:    email,
+		password: hashedPassword,
+	}, nil
+}
+
 func (u *user) GetDeleted() bool {
 	return u.deleted
 }

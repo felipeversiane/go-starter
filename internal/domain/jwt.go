@@ -15,20 +15,6 @@ var (
 	JWT_REFRESH_SECRET_KEY = "JWT_SECRET_REFRESH_KEY"
 )
 
-func NewUserLogin(
-	email, password string,
-) (UserInterface, error) {
-	hashedPassword, err := hashPassword(password)
-	if err != nil {
-		return nil, fmt.Errorf("failed to hash password: %w", err)
-	}
-
-	return &user{
-		email:    email,
-		password: hashedPassword,
-	}, nil
-}
-
 func (ud *user) GenerateToken() (string, string, *response.ErrorResponse) {
 	access, err := ud.GenerateAcessToken()
 	if err != nil {
